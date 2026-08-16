@@ -1,0 +1,807 @@
+{
+  "name": "Customer Support Handler",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -240,
+        48
+      ],
+      "id": "cb0a5a7a-8fb4-4148-8516-13c1bf4d5c55",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ca16a308-7e27-4610-9702-84b4118fb135",
+              "leftValue": "{{ $json.customer.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -48,
+        48
+      ],
+      "id": "da4074e0-b5bb-4019-9c79-ecc442014950",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.classification.request_type.toLowerCase().trim() }}",
+                    "rightValue": "wrong_order",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "5b15d88f-b104-4a6f-9ba3-cc01e91bd2ab"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ba660355-ca20-47eb-9a2b-96f739aed391",
+                    "leftValue": "={{ $json.classification.request_type.toLowerCase().trim() }}",
+                    "rightValue": "refund",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5d80da2e-556d-4ff8-ac9b-384e18df558a",
+                    "leftValue": "={{ $json.classification.request_type.toLowerCase().trim() }}",
+                    "rightValue": "complaint",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ee919b79-65e0-4322-b08f-cd0460875ddd",
+                    "leftValue": "={{ $json.classification.request_type.toLowerCase().trim() }}",
+                    "rightValue": "general_inquiry",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "none"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        144,
+        0
+      ],
+      "id": "4f8af027-e3a7-40a6-b28b-b35f22483895",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1MA7XaxulTvBFdht1-Nk70RJ4Lp6iYQ1ub4nOSL-R_WA",
+          "mode": "list",
+          "cachedResultName": "Customer Operations Tickets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MA7XaxulTvBFdht1-Nk70RJ4Lp6iYQ1ub4nOSL-R_WA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MA7XaxulTvBFdht1-Nk70RJ4Lp6iYQ1ub4nOSL-R_WA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Request ID": "={{ $json['Request ID'] }}",
+            "Customer Name": "={{ $json['Customer Name'] }}",
+            "Customer Email": "={{ $json['Customer Email'] }}",
+            "Request": "={{ $json['Request'] }}",
+            "Priority": "={{ $json['Priority'] }}",
+            "Created At": "={{ $json['Created At'] }}",
+            "Status": "={{ $json['Status'] }}",
+            "Request Type": "={{ $json['Request Type'] }}"
+          },
+          "matchingColumns": [
+            "Request ID"
+          ],
+          "schema": [
+            {
+              "id": "Request ID",
+              "displayName": "Request ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Customer Email",
+              "displayName": "Customer Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Request",
+              "displayName": "Request",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Request Type",
+              "displayName": "Request Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Created At",
+              "displayName": "Created At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1168,
+        16
+      ],
+      "id": "e4a1e791-7ed2-4b89-97ba-0a13012abd0d",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "QItZLDumeAoxRx02",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "1455270563",
+        "text": "={{ $json[\"Request Type\"] === 'refund' ? '💰' : '📦' }} {{ $json[\"Status\"] === 'Updated' ? 'UPDATED' : 'NEW' }} {{ $json[\"Request Type\"] === 'refund' ? 'REFUND REQUEST' : 'ORDER ISSUE' }}\n\nRequest ID: {{ $json[\"Request ID\"] }}\nEmail: {{ $json[\"Customer Email\"] }}\nIssue: {{ $json[\"Request\"] }}\nPriority: {{ $json[\"Priority\"] }}\nAction: {{ $('When Executed by Another Workflow').first().json.classification.requested_action }}\nStatus: {{ $json[\"Status\"] }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1600,
+        16
+      ],
+      "id": "f22eb492-ff6a-4de3-9c87-ed1b9195a1b4",
+      "name": "Warehouse",
+      "webhookId": "653e8ae6-4c77-412d-9935-f68a9ee4fed8",
+      "credentials": {
+        "telegramApi": {
+          "id": "uauwCW6cQMoqTdwR",
+          "name": "Telegram account 7"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Format Email - Operational').all().length > 0 ? $('Format Email - Operational').first().json.email_to : $('Format Email - Inquiry').first().json.email_to }}",
+        "subject": "={{ $('Format Email - Operational').all().length > 0 ? $('Format Email - Operational').first().json.email_subject : $('Format Email - Inquiry').first().json.email_subject }}",
+        "message": "={{ $('Format Email - Operational').all().length > 0 ? $('Format Email - Operational').first().json.email_message : $('Format Email - Inquiry').first().json.email_message }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1888,
+        256
+      ],
+      "id": "1345751f-b385-4137-8ee8-8e2425ea944c",
+      "name": "Send a message",
+      "webhookId": "493e1d06-50ef-424e-aa6a-696727b820d4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4a9k1q9VyHQ0BBPC",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "51fb8453-c41c-43fe-8a61-c4eaed06c039",
+              "name": "request_id",
+              "value": "={{ $if(\n  $('When Executed by Another Workflow').first().json.request_id,\n  $('When Executed by Another Workflow').first().json.request_id,\n  'N/A'\n) }}",
+              "type": "string"
+            },
+            {
+              "id": "2a8926ea-0b87-41c9-88ce-d4c9281fa5e6",
+              "name": "status",
+              "value": "processed",
+              "type": "string"
+            },
+            {
+              "id": "8b425ee6-e356-4902-833f-88727949ab91",
+              "name": "action",
+              "value": "={{ $('When Executed by Another Workflow').first().json.classification.requested_action }}",
+              "type": "string"
+            },
+            {
+              "id": "6368c3dc-e193-4e06-a346-816adedd2e1f",
+              "name": "route",
+              "value": "={{ $('When Executed by Another Workflow').first().json.classification.request_type }}",
+              "type": "string"
+            },
+            {
+              "id": "bdcdebc3-04d1-4a13-8176-e97f5975cc2f",
+              "name": "processed_at",
+              "value": "={{ $now }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2080,
+        256
+      ],
+      "id": "4bb1b758-1f75-41c8-92b9-f43500a07dc7",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1MA7XaxulTvBFdht1-Nk70RJ4Lp6iYQ1ub4nOSL-R_WA",
+          "mode": "list",
+          "cachedResultName": "Customer Operations Tickets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MA7XaxulTvBFdht1-Nk70RJ4Lp6iYQ1ub4nOSL-R_WA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MA7XaxulTvBFdht1-Nk70RJ4Lp6iYQ1ub4nOSL-R_WA/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Request ID",
+              "lookupValue": "={{ $('When Executed by Another Workflow').first().json.request_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        688,
+        16
+      ],
+      "id": "ddba7928-8a7a-4ff1-bd7b-64c6f666d641",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "QItZLDumeAoxRx02",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "21a08569-9205-4ed6-80e9-8b56648f7d1c",
+              "name": "Request ID",
+              "value": "={{ $json['Request ID'] ? $json['Request ID'] : $('When Executed by Another Workflow').first().json.request_id }}",
+              "type": "string"
+            },
+            {
+              "id": "ce73b953-69c3-4782-b623-3b5de1e8339e",
+              "name": "Customer Name",
+              "value": "={{ $('When Executed by Another Workflow').first().json.customer.name }}",
+              "type": "string"
+            },
+            {
+              "id": "6576161a-2d13-445b-883b-b31e5b975a96",
+              "name": "Customer Email",
+              "value": "={{ $('When Executed by Another Workflow').first().json.customer.email }}",
+              "type": "string"
+            },
+            {
+              "id": "eefcd021-bbf8-44ba-965b-f17f7ec57d22",
+              "name": "Request",
+              "value": "={{ $('When Executed by Another Workflow').first().json.request.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "86539a8d-d6e2-4e8e-a909-6abae37ddadf",
+              "name": "Request Type",
+              "value": "={{ $('When Executed by Another Workflow').first().json.classification.request_type }}",
+              "type": "string"
+            },
+            {
+              "id": "ce42a40b-2b70-4272-8ab4-225839c93083",
+              "name": "Priority",
+              "value": "={{ $('When Executed by Another Workflow').first().json.classification.priority }}",
+              "type": "string"
+            },
+            {
+              "id": "905304ea-6408-4dbc-b175-2616738779e7",
+              "name": "Status",
+              "value": "={{ $json['Request ID'] ? 'Updated' : $('Map Sheet Config').first().json.status_label }}",
+              "type": "string"
+            },
+            {
+              "id": "fbeda4f3-dd43-4a46-80dd-c3e2714d2598",
+              "name": "Created At",
+              "value": "={{ $json['Created At'] ? $json['Created At'] : $now }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        928,
+        16
+      ],
+      "id": "672993d6-031d-4526-b531-9a8f07cc07a9",
+      "name": "Prepare Record"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('When Executed by Another Workflow').first().json.request.message }}",
+        "options": {
+          "systemMessage": "=You are a customer support assistant for an e-commerce company.\n\nAnswer the customer's question directly and helpfully using the information below. Be warm, professional, and concise.\n\nCOMPANY INFO:\n- Standard shipping: 3-5 business days\n- Express shipping: 1-2 business days\n- International shipping: 7-14 business days\n- Returns accepted within 30 days of delivery\n- Refunds processed within 5-7 business days after we receive the returned item\n- Customer support hours: Mon-Fri, 9am-6pm EST\n\nRULES:\n1. If the question is covered by the info above, answer it directly and confidently.\n2. If you don't have enough information to answer (e.g. requires looking up their specific order), tell the customer the support team will review their case and follow up.\n3. Keep the response under 100 words.\n4. Sign off as \"Customer Support Team\".\n5. Return ONLY the customer-facing email"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        432,
+        288
+      ],
+      "id": "6d45bbdb-e4ed-465c-a378-7f18eb84b259",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openrouter/free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        432,
+        512
+      ],
+      "id": "c3fac1bf-d562-4e91-a9f9-e69b3f0954c9",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "auz7WUVRCi8hWdDt",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a29bd9e5-0485-4738-8488-7749ef6d8e3f",
+              "name": "status_label",
+              "value": "={{\n  $json.classification.request_type === 'refund'\n    ? 'Refund Requested'\n    : $json.classification.request_type === 'complaint'\n      ? 'Escalated'\n      : 'Open'\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        400,
+        16
+      ],
+      "id": "ce2188c7-c82c-4f08-8f73-373a00fd43ed",
+      "name": "Map Sheet Config"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6274d925-4c99-407b-b826-e9b8c81e5ee4",
+              "name": "email_to",
+              "value": "={{ $('When Executed by Another Workflow').first().json.customer.email }}",
+              "type": "string"
+            },
+            {
+              "id": "cfd146fd-e423-4291-ba98-218979b3da9a",
+              "name": "email_subject",
+              "value": "We received your inquiry",
+              "type": "string"
+            },
+            {
+              "id": "db2d230e-a1e4-4dd6-bc82-88ad4e3273bb",
+              "name": "email_message",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        944,
+        288
+      ],
+      "id": "0dfed29c-1b18-4949-8ed0-4c3e937b087f",
+      "name": "Format Email - Inquiry"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "31e1ce1d-97c1-4081-8fa9-59e7290912c5",
+              "name": "email_to",
+              "value": "={{ $json['Customer Email'] }}",
+              "type": "string"
+            },
+            {
+              "id": "b5b9b3ef-629b-4239-bcdb-3aceea92a25b",
+              "name": "email_subject",
+              "value": "=We received your request - {{ $json['Request ID'] }}",
+              "type": "string"
+            },
+            {
+              "id": "9255aa83-291b-4853-9caf-4b7af4491614",
+              "name": "email_message",
+              "value": "=Hi {{ $json['Customer Name'] }}, Request ID: {{ $json['Request ID'] }}. We've received your {{ $json['Request Type'] }} request and it's now marked as {{ $json['Status'] }}. We'll keep you updated on progress.  Customer Support Team",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1392,
+        16
+      ],
+      "id": "615fc5e4-7e6d-4fa1-9e56-8f8ee769c633",
+      "name": "Format Email - Operational"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Map Sheet Config",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Map Sheet Config",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Map Sheet Config",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Format Email - Operational",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Warehouse": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Prepare Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Record": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Format Email - Inquiry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Sheet Config": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Email - Inquiry": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Email - Operational": {
+      "main": [
+        [
+          {
+            "node": "Warehouse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b796f0a3-d467-4517-8025-fcdd3111aa0d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b693a1ce44cc6b71ba473406a1e130a869d621ad18ce4b6f4ca83a4b643b3dce"
+  },
+  "id": "KXIUJ1M7lqKRCs5X",
+  "tags": []
+}
