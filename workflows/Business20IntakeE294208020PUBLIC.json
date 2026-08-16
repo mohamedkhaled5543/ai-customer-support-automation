@@ -1,0 +1,482 @@
+{
+  "name": "Business Operations Intake — v1",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "q": "-from:mohamedhassan45690@gmail.com"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -240,
+        16
+      ],
+      "id": "8dbec469-5673-4405-843e-57b1428a4280",
+      "name": "Gmail Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "38958a20-1abd-46ff-9bc0-4bacdd4c08c2",
+              "name": "customer_name",
+              "value": "={{ $json.customer_name }}",
+              "type": "string"
+            },
+            {
+              "id": "b5656d12-e9b7-4be6-8674-d5644312ae3c",
+              "name": "customer_email",
+              "value": "={{ $json.customer_email }}",
+              "type": "string"
+            },
+            {
+              "id": "baf93238-e81a-47dc-b8c6-c489c3c6cd9f",
+              "name": "subject",
+              "value": "={{ $json.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "c107a3d1-3a80-4b85-9479-46dff29e16ce",
+              "name": "message",
+              "value": "={{ $json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "91cb4ebf-6d9c-438c-8e14-14748b737f1f",
+              "name": "message_id",
+              "value": "={{ $json.message_id }}",
+              "type": "string"
+            },
+            {
+              "id": "57401e74-71e4-4b70-b88d-6658fe75d9af",
+              "name": "received_at",
+              "value": "={{ $today }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        16
+      ],
+      "id": "0bd33f69-e7be-4c15-9a0d-06288a9afa61",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const from = $json.From || \"\";\n\nconst match = from.match(/^(.*?)\\s*<([^>]+)>$/);\n\nconst customer_name = match ? match[1].trim() : from.trim();\nconst customer_email = match ? match[2].trim() : \"\";\n\nreturn {\n  json: {\n    customer_name,\n    customer_email,\n    subject: $json.Subject || \"\",\n    message: $json.snippet || \"\",\n    received_at: $json.internalDate || \"\",\n    message_id: $json.id || \"\"\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        16
+      ],
+      "id": "6ef6c59e-b948-4700-815e-b591bf99bda0",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are a customer request classification system for an e-commerce company.\nYour ONLY job is to analyze the customer's message and classify the request.\nDetermine:\n- request_type\n- department\n- priority\n- requested_action\n\nAllowed request_type values:\n- wrong_order\n- refund\n- complaint\n- general_inquiry\n\nAllowed department values:\n- customer_support\n- sales\n- warehouse\n- delivery\n- finance\nClassification rules:\n\n- wrong_order:\n  Use when the customer's primary request is to report an incorrect/wrong item\n  and request a replacement or correction.\n\n- refund:\n  Use when the customer's primary request is to receive a refund.\n\n- complaint:\n  Use when the customer is expressing dissatisfaction and wants the issue\n  escalated, reviewed by a supervisor/manager, or is complaining about poor\n  service/resolution.\n\n- general_inquiry:\n  Use for questions that don't require a replacement, refund, or escalation.\n\nImportant:\nClassify based on the customer's PRIMARY INTENT, not just the problem mentioned.\n\nIf a customer mentions a wrong item but explicitly asks to escalate a complaint,\nclassify as \"complaint\".\n\nIf they simply report the wrong item and ask for a replacement, classify as\n\"wrong_order\".\n\nAllowed priority values:\n- low\n- medium\n- high\n\nRules:\n1. Classify based only on information provided by the customer.\n2. Do not invent facts.\n3. If the request is unclear, use \"general_inquiry\".\n4. Choose the department primarily responsible for resolving the request.\n5. Choose priority based on urgency and potential business impact.\n6. Keep requested_action short and specific.\n7. Do not answer the customer.\n8. Do not send emails.\n9. Do not perform actions.\n10. Only classify the request.\n\nThe response must follow the structured output schema provided to you."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        752,
+        -96
+      ],
+      "id": "1152f6c4-f82a-47b8-8428-299380467055",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openrouter/free",
+        "options": {
+          "maxTokens": 1500
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        720,
+        80
+      ],
+      "id": "29ef14f6-0d70-4ed2-89c0-ebdebd381bdf",
+      "name": "OpenRouter Chat Model"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"request_type\": {\n      \"type\": \"string\",\n      \"enum\": [\"wrong_order\", \"refund\", \"complaint\", \"general_inquiry\"]\n    },\n    \"department\": { \"type\": \"string\" },\n    \"priority\": {\n      \"type\": \"string\",\n      \"enum\": [\"low\", \"medium\", \"high\"]\n    },\n    \"requested_action\": { \"type\": \"string\" }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        912,
+        80
+      ],
+      "id": "7218bdbf-2f9b-413f-bf63-34c5213084c7",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.classification.department }}",
+                    "rightValue": "={{ $json.classification.department.toLowerCase().trim() }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "bf1932d9-3bde-44d9-a88c-e9e33a5580e9"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1376,
+        -96
+      ],
+      "id": "f53e923a-c3d1-4aad-8599-b862186d3fc9",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"customer\": {\n    \"name\": \"{{ $('Edit Fields').item.json.customer_name }}\",\n    \"email\": \"{{ $('Edit Fields').item.json.customer_email }}\"\n  },\n  \"request\": {\n    \"subject\": \"{{ $('Edit Fields').item.json.subject }}\",\n    \"message\": \"{{ $('Edit Fields').item.json.message }}\"\n  },\n  \"classification\": {\n    \"request_type\": \"{{ $json.output.request_type }}\",\n    \"department\": \"{{ $json.output.department }}\",\n    \"priority\": \"{{ $json.output.priority }}\",\n    \"requested_action\": \"{{ $json.output.requested_action }}\"\n  },\n  \"request_id\": \"{{ 'REQ-' + Date.now() }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1152,
+        -96
+      ],
+      "id": "1fcddc4b-b596-4e5a-a358-5477f135de2a",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "KXIUJ1M7lqKRCs5X",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/KXIUJ1M7lqKRCs5X",
+          "cachedResultName": "Customer Support Handler"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1616,
+        -96
+      ],
+      "id": "ffc2f29d-8757-447a-9214-798cf8402aa8",
+      "name": "Call 'Customer Support Handler'"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5ae090b2-d700-4712-be5e-95e7ed2b4ceb",
+              "leftValue": "={{ $('Edit Fields').first().json.customer_name }}\n",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "ce24ed0c-8916-46db-8873-4a435361d972",
+              "leftValue": "={{ $('Edit Fields').first().json.customer_email }}\n",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "6a73242a-49c2-4ece-bb01-a0436154a341",
+              "leftValue": "={{ $('Edit Fields').first().json.subject }}\n",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "4b6933cf-1fc9-402a-a34f-986e12f991db",
+              "leftValue": "={{ $('Edit Fields').first().json.message }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        352,
+        16
+      ],
+      "id": "f8348810-f882-44e9-81d6-b21bcb784e09",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cbc079b2-76b0-4ead-8641-128f31942883",
+              "name": "status",
+              "value": "validation_failed",
+              "type": "string"
+            },
+            {
+              "id": "a0856200-cd99-45fe-914c-b51c1610dcfa",
+              "name": "error_type",
+              "value": "missing_required_field",
+              "type": "string"
+            },
+            {
+              "id": "9796eb9b-0f6a-4aa2-a608-21a2ed4e6479",
+              "name": "message",
+              "value": "The request could not be processed because one or more required fields are missing.",
+              "type": "string"
+            },
+            {
+              "id": "e4cbd6ef-961d-4dcf-8dba-3997af5d8082",
+              "name": "request_id",
+              "value": "={{ 'INVALID-' + Date.now() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        528,
+        256
+      ],
+      "id": "f5d85d0e-1615-4e55-bcb2-9d3c0927cfee",
+      "name": "Handle Validation Failure"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Code in JavaScript').first().json.customer_email }}",
+        "subject": "We need more information to process your request",
+        "message": "=Hi,  We received your message, but we're missing some information required to process your request.  Please send your request again with the necessary details, and our customer support team will be happy to help.  Thank you, Customer Support Team",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        736,
+        256
+      ],
+      "id": "95f81fca-8b57-405d-a157-f28c3f7359c1",
+      "name": "Notify customer",
+      "webhookId": "bad07eb4-a5ac-432a-b545-8d19cb8487f0"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Call 'Customer Support Handler'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Handle Validation Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle Validation Failure": {
+      "main": [
+        [
+          {
+            "node": "Notify customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "NwvFHAPhxqsT56Zp",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "e364c2c8-013d-47c1-9706-b336ea47c147",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "eVkfSHsrTIQMuDH3",
+  "tags": []
+}
