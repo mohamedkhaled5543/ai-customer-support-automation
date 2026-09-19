@@ -180,6 +180,4 @@ Safety net for the whole system.
 
 ---
 
-## Author
 
-Mohamed (ZOREN) — building AI automation systems.
